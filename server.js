@@ -40,11 +40,27 @@ const server = net.createServer( (client)=>{
     })
   }
   function command(string){
-    if(string === "/clientlist"){
+    let commands = parseCommand(string);
+    console.log(commands[0])
+    if(commands[0] === "w"){
+      client.write(`Whisper command incomplete`)
+      client.write(`Will whisper to ${comands[1]}`)
+
+    }else if(commands[0] === "username"){
+      client.username = commands[1];
+      client.write(`changed username to ${client.username}`)
+
+    }else if(commands[0] === "kick"){
+      client.write(`Kick command incomplete`)
+      client.write(`Kicking ${commands[1]}`);
+
+    }else if(commands[0] === "clientlist"){
       for(let i=0; i<users.length; i++){
         client.write(`-${users[i].username}`)
-
       }
+
+    }else{
+      client.write(`Command not recognized`)
     }
   }
   function removeUser(id){
@@ -73,18 +89,14 @@ const server = net.createServer( (client)=>{
   })
 })
 
-function parseText(text){
-  let output = [];
-  const tmp = text.split(/\r?\n/).filter(element => element);
-  while(tmp.length){
-    let words = tmp.shift();
-    words = words.split(", ")
-    output[words[0]] = words[1]
-  }
+function parseCommand(text){
+  text = text.replaceAll("/", "")
+  const output = text.split(/\r? /).filter(element => element);
+  // console.log(output)
   return output;
 }
 
-// parseText("lime, green\npineapple, yellow")
+parseCommand("l/ime green pine/apple yello/w")
 
 server.listen(port, ()=>{
   // console.log(`server is up. listening on port ${port}`)
