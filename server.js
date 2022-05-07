@@ -14,6 +14,7 @@ const server = net.createServer( (client)=>{
 
   client.write(`\n`)
   client.username = `Guest${counter+1}`
+  client.id = counter;
 
 
   //
@@ -21,9 +22,13 @@ const server = net.createServer( (client)=>{
   counter++;
   //
 
-  function writeAll(message){
+  function writeAll(message, type){
+    let prefix ="";
+    if(type === 'chat'){
+      prefix = "[---";
+    }
     for(let i=0; i<users.length; i++){
-      users[i].write(`${message}`)
+      users[i].write(`${prefix}${message}`)
     }
     saveLog(message)
   }
@@ -34,25 +39,37 @@ const server = net.createServer( (client)=>{
       }
     })
   }
+  function command(string){
+    if(string === "/clientlist"){
+      for(let i=0; i<users.length; i++){
+        client.write(`-${users[i].username}`)
 
-  writeAll(`${client.username} connected`)
+      }
+    }
+  }
+  function removeUser(id){
+    writeAll(`${client.username} disconnected`)
+    users.splice(client.id, 1)
+    counter--;
+  }
+
+  client.write(`You are connect under username ${client.username}\n`);
+  writeAll(`${client.username} connected`);
   // saveLog(`${client.username} connected`)
-
-  client.write(`You are connect under username ${client.username}\n`)
-
-
-
-
 
 
 
   client.on('data', (payload)=>{
     let clientMessage = payload.toString().trim()
-    // console.log(`receiving ${clientMessage} from client`)
-    writeAll(`${client.username}: ${clientMessage}`)
+    if(clientMessage[0] !== '/'){
+      writeAll(`${client.username}: ${clientMessage}`, "chat")
+    }else{
+      command(clientMessage);
+    }
   })
+
   client.on('end', ()=>{
-    writeAll(`${client.username} disconnected`)
+    removeUser();
   })
 })
 
@@ -64,9 +81,6 @@ function parseText(text){
     words = words.split(", ")
     output[words[0]] = words[1]
   }
-
-  // console.log(`---] PARSED DATA is`)
-  // console.log(output)
   return output;
 }
 
