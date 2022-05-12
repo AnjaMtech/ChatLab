@@ -18,3 +18,7 @@ process.stdin.on('readable', ()=>{
 client.on('data', (message)=>{
   console.log(`${message}`)
 })
+
+//-----WIP
+// socket.emit('forceDisconnect');
+//-----WIP
